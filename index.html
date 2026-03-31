@@ -70,21 +70,19 @@
 </div>
 
 <script>
-// 万・億フォーマット
+// 日本語の単位変換（万・億）
 function formatJP(num) {
   if (num >= 100000000) {
     return (num / 100000000).toFixed(2).replace(/\.00$/, "") + "億";
   } else if (num >= 10000) {
-    return (num / 10000).toFixed(0) + "万";
+    return (num / 10000).toFixed(2).replace(/\.00$/, "") + "万";
   } else {
     return num.toLocaleString();
   }
 }
 
-// 元の計算式（完全再現）
 function calcValue(a) {
   let base = 100 * Math.pow(a, 0.25);
-
   if (base < 10000) {
     return Math.floor(base / 10) * 10;
   } else {
@@ -104,10 +102,10 @@ function calcFromAsset() {
   const result = calcValue(a);
 
   document.getElementById("result1").innerText =
-    "✨ 推奨入札値：" + formatJP(result);
+    "想定入札値：" + formatJP(result);
 }
 
-// 入札値 → 必要総資産（高速逆算）
+// 入札値 → 必要総資産（逆算・高速版）
 function calcFromBid() {
   const target = Number(document.getElementById("bid").value);
 
@@ -133,12 +131,17 @@ function calcFromBid() {
 
   if (found) {
     document.getElementById("result2").innerText =
-      "✨ 必要総資産：約 " + formatJP(found);
+      "必要総資産：約 " + formatJP(found);
   } else {
     document.getElementById("result2").innerText =
       "見つかりません（範囲外）";
   }
 }
+
+// テスト（コンソール確認用）
+console.log(formatJP(25762)); // 2.57万
+console.log(formatJP(10000)); // 1万
+console.log(formatJP(3201000000)); // 32.01億
 </script>
 
 </body>
