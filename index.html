@@ -36,6 +36,12 @@
       font-size: 16px;
     }
 
+    .preview {
+      font-size: 14px;
+      color: #888;
+      margin-top: 5px;
+    }
+
     .result {
       margin-top: 15px;
       font-size: 18px;
@@ -56,12 +62,14 @@
 
   <label>総資産 → 入札値</label>
   <input type="number" id="asset" placeholder="総資産" oninput="calcFromAsset()">
+  <div class="preview" id="assetPreview"></div>
   <div class="result" id="result1">---</div>
 
   <hr style="margin:20px 0;">
 
   <label>入札値 → 必要総資産</label>
   <input type="number" id="bid" placeholder="入札金額" oninput="calcFromBid()">
+  <div class="preview" id="bidPreview"></div>
   <div class="result" id="result2">---</div>
 
   <div class="copyright">
@@ -94,6 +102,9 @@ function calcValue(a) {
 function calcFromAsset() {
   const a = Number(document.getElementById("asset").value);
 
+  document.getElementById("assetPreview").innerText =
+    a ? "👉 " + formatJP(a) : "";
+
   if (!a || a <= 0) {
     document.getElementById("result1").innerText = "---";
     return;
@@ -105,16 +116,18 @@ function calcFromAsset() {
     "想定入札値：" + formatJP(result);
 }
 
-// 入札値 → 必要総資産（逆算・高速版）
+// 入札値 → 必要総資産
 function calcFromBid() {
   const target = Number(document.getElementById("bid").value);
+
+  document.getElementById("bidPreview").innerText =
+    target ? "👉 " + formatJP(target) : "";
 
   if (!target || target <= 0) {
     document.getElementById("result2").innerText = "---";
     return;
   }
 
-  // 理論値からスタート
   let start = Math.pow(target / 100, 4) * 0.8;
   let end = start * 1.5;
 
@@ -137,11 +150,6 @@ function calcFromBid() {
       "見つかりません（範囲外）";
   }
 }
-
-// テスト（コンソール確認用）
-console.log(formatJP(25762)); // 2.57万
-console.log(formatJP(10000)); // 1万
-console.log(formatJP(3201000000)); // 32.01億
 </script>
 
 </body>
