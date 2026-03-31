@@ -5,7 +5,7 @@
   <title>宅地競売ツール</title>
   <style>
     body {
-      font-family: "Hiragino Maru Gothic ProN", "Arial", sans-serif;
+      font-family: "Hiragino Maru Gothic ProN", sans-serif;
       background: linear-gradient(135deg, #ffe0ec, #e0f7ff);
       height: 100vh;
       display: flex;
@@ -18,14 +18,13 @@
       background: white;
       padding: 30px;
       border-radius: 20px;
-      width: 350px;
+      width: 360px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.15);
       text-align: center;
     }
 
     h2 {
       color: #ff6fa5;
-      margin-bottom: 20px;
     }
 
     input {
@@ -37,38 +36,14 @@
       font-size: 16px;
     }
 
-    button {
-      margin-top: 15px;
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 10px;
-      background: #ff6fa5;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    button:hover {
-      background: #ff4f90;
-    }
-
     .result {
-      margin-top: 20px;
-      font-size: 20px;
-      color: #333;
+      margin-top: 15px;
+      font-size: 18px;
       font-weight: bold;
     }
 
-    .sub {
-      font-size: 12px;
-      color: #888;
-      margin-top: 10px;
-    }
-
     .copyright {
-      margin-top: 25px;
+      margin-top: 20px;
       font-size: 12px;
       color: #aaa;
     }
@@ -79,13 +54,15 @@
 <div class="card">
   <h2>🏠 宅地競売ツール</h2>
 
-  <label>総資産を入力</label>
-  <input type="number" id="asset" placeholder="例：100000">
+  <label>総資産 → 入札値</label>
+  <input type="number" id="asset" placeholder="総資産" oninput="calcFromAsset()">
+  <div class="result" id="result1">---</div>
 
-  <button onclick="calc()">計算する</button>
+  <hr style="margin:20px 0;">
 
-  <div class="result" id="result"></div>
-  <div class="sub">※ Excelの計算式を完全再現</div>
+  <label>入札値 → 必要総資産</label>
+  <input type="number" id="bid" placeholder="入札金額" oninput="calcFromBid()">
+  <div class="result" id="result2">---</div>
 
   <div class="copyright">
     © 2026 青銅S9⛅雲外蒼天 All Rights Reserved.
@@ -93,26 +70,74 @@
 </div>
 
 <script>
-function calc() {
+// 万・億フォーマット
+function formatJP(num) {
+  if (num >= 100000000) {
+    return (num / 100000000).toFixed(2).replace(/\.00$/, "") + "億";
+  } else if (num >= 10000) {
+    return (num / 10000).toFixed(0) + "万";
+  } else {
+    return num.toLocaleString();
+  }
+}
+
+// 元の計算式（完全再現）
+function calcValue(a) {
+  let base = 100 * Math.pow(a, 0.25);
+
+  if (base < 10000) {
+    return Math.floor(base / 10) * 10;
+  } else {
+    return Math.floor(base / 100) * 100;
+  }
+}
+
+// 総資産 → 入札値
+function calcFromAsset() {
   const a = Number(document.getElementById("asset").value);
 
   if (!a || a <= 0) {
-    alert("正しい値を入力してね！");
+    document.getElementById("result1").innerText = "---";
     return;
   }
 
-  let base = 100 * Math.pow(a, 0.25);
+  const result = calcValue(a);
 
-  let result;
+  document.getElementById("result1").innerText =
+    "✨ 推奨入札値：" + formatJP(result);
+}
 
-  if (base < 10000) {
-    result = Math.floor(base / 10) * 10;
-  } else {
-    result = Math.floor(base / 100) * 100;
+// 入札値 → 必要総資産（高速逆算）
+function calcFromBid() {
+  const target = Number(document.getElementById("bid").value);
+
+  if (!target || target <= 0) {
+    document.getElementById("result2").innerText = "---";
+    return;
   }
 
-  document.getElementById("result").innerText =
-    "✨ 推奨入札値：" + result.toLocaleString();
+  // 理論値からスタート
+  let start = Math.pow(target / 100, 4) * 0.8;
+  let end = start * 1.5;
+
+  let a = Math.floor(start);
+  let found = null;
+
+  while (a <= end) {
+    if (calcValue(a) >= target) {
+      found = a;
+      break;
+    }
+    a += 1000;
+  }
+
+  if (found) {
+    document.getElementById("result2").innerText =
+      "✨ 必要総資産：約 " + formatJP(found);
+  } else {
+    document.getElementById("result2").innerText =
+      "見つかりません（範囲外）";
+  }
 }
 </script>
 
